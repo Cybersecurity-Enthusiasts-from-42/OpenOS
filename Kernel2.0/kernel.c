@@ -19,7 +19,7 @@ static size_t term_col = 0;
 static uint8_t term_color = 0x0F; /* white on black */
 
 static uint16_t vga_entry(char c, uint8_t color) {
-    return (uint16_t)c | ((uint16_t)color << 8);
+    return (uint16_t)(uint8_t)c | ((uint16_t)color << 8);
 }
 
 static void terminal_clear(void) {
