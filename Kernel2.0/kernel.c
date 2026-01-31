@@ -32,12 +32,26 @@ static void terminal_clear(void) {
     term_col = 0;
 }
 
+static void terminal_scroll(void) {
+    /* Scroll up by moving all lines up by one */
+    for (size_t y = 0; y < VGA_HEIGHT - 1; y++) {
+        for (size_t x = 0; x < VGA_WIDTH; x++) {
+            vga_buf[y * VGA_WIDTH + x] = vga_buf[(y + 1) * VGA_WIDTH + x];
+        }
+    }
+    /* Clear the last line */
+    for (size_t x = 0; x < VGA_WIDTH; x++) {
+        vga_buf[(VGA_HEIGHT - 1) * VGA_WIDTH + x] = vga_entry(' ', term_color);
+    }
+}
+
 static void terminal_put_char(char c) {
     if (c == '\n') {
         term_col = 0;
         term_row++;
         if (term_row >= VGA_HEIGHT) {
-            term_row = 0;
+            terminal_scroll();
+            term_row = VGA_HEIGHT - 1;
         }
         return;
     }
@@ -48,7 +62,8 @@ static void terminal_put_char(char c) {
         term_col = 0;
         term_row++;
         if (term_row >= VGA_HEIGHT) {
-            term_row = 0;
+            terminal_scroll();
+            term_row = VGA_HEIGHT - 1;
         }
     }
 }
