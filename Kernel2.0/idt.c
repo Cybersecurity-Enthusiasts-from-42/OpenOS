@@ -26,8 +26,10 @@ void idt_set_gate(uint8_t num, uint32_t handler, uint16_t selector, uint8_t flag
 
 /* Initialize the IDT */
 void idt_init(void) {
+    int i;
+    
     /* Clear the IDT */
-    for (int i = 0; i < IDT_ENTRIES; i++) {
+    for (i = 0; i < IDT_ENTRIES; i++) {
         idt[i].offset_low = 0;
         idt[i].offset_high = 0;
         idt[i].selector = 0;

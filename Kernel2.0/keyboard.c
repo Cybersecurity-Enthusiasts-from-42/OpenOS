@@ -133,11 +133,11 @@ void keyboard_handler(void) {
                 ascii = scancode_to_ascii[scancode];
             }
             
-            /* Apply caps lock for letters */
-            if (caps_lock && ascii >= 'a' && ascii <= 'z') {
-                ascii -= 32;  /* Convert to uppercase */
-            } else if (caps_lock && ascii >= 'A' && ascii <= 'Z') {
-                ascii += 32;  /* Convert to lowercase */
+            /* Apply caps lock for letters (only when shift is not pressed) */
+            if (caps_lock && !shift_pressed) {
+                if (ascii >= 'a' && ascii <= 'z') {
+                    ascii -= 32;  /* Convert to uppercase */
+                }
             }
             
             /* Handle special keys */
@@ -172,7 +172,7 @@ void keyboard_get_line(char* buffer, int max_len) {
     input_buffer_pos = 0;
     line_ready = 0;
     
-    /* Wait for line to be ready */
+    /* Wait for line to be ready (interrupts must be enabled) */
     while (!line_ready) {
         __asm__ __volatile__("hlt");
     }
