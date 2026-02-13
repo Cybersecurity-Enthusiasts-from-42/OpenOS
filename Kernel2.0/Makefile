@@ -84,7 +84,10 @@ $(TARGET).bin: $(OBJS) linker.ld
 	$(CC) -T linker.ld -o $@ -m32 $(LDFLAGS) $(OBJS)
 
 # Run kernel in QEMU
+# Note: Direct kernel boot may not work with QEMU 7.0+ due to PVH ELF Note requirement
+# For best compatibility, use 'make run' from the root directory which boots via ISO
 run: $(TARGET).bin
+	@echo "Note: If you get 'Error loading uncompressed kernel', use 'make run' from root directory"
 	qemu-system-i386 -kernel $(TARGET).bin
 
 # Clean build artifacts

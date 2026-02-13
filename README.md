@@ -48,7 +48,6 @@ All with clean, simple, modern C + Assembly code.
 ### Build and Run (QEMU)
 
 ```bash
-cd Kernel2.0
 make run
 ```
 
