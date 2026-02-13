@@ -127,6 +127,8 @@ If you prefer to set up VirtualBox manually:
 
 4. Start the VM and enjoy!
 
+**Troubleshooting:** If you encounter any issues with VirtualBox, see the [VirtualBox Troubleshooting Guide](docs/VIRTUALBOX_TROUBLESHOOTING.md).
+
 #### Option 3: ISO in QEMU
 
 To test the ISO image in QEMU:
@@ -168,6 +170,7 @@ Additional documentation can be found in the `/docs` directory:
 
 - `architecture.md` - System architecture overview
 - `roadmap.md` - Future development plans
+- `VIRTUALBOX_TROUBLESHOOTING.md` - VirtualBox setup and troubleshooting
 - `Kernel2.0/README.md` - Detailed kernel documentation
 
 ## 📄 License
