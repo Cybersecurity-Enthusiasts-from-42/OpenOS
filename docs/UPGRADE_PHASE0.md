@@ -303,12 +303,12 @@ That's it! Memory management is now active.
 - **Memory Allocators**: 2 (PMM + VMM fully implemented)
 
 ### New Code Added
-- **exceptions.S**: 100 lines (assembly stubs)
-- **exceptions.c**: 210 lines (C handler)
-- **pmm.c**: 200 lines (bitmap allocator)
-- **vmm.c**: 180 lines (replaced 119 lines of stubs)
-- **timer.c**: 70 lines (PIT driver)
-- **Total New Code**: ~760 lines
+- **exceptions.S**: 106 lines (assembly stubs)
+- **exceptions.c**: 211 lines (C handler)
+- **pmm.c**: 199 lines (bitmap allocator)
+- **vmm.c**: +205 lines, -38 lines (replaced stubs with full implementation)
+- **timer.c**: 75 lines (PIT driver)
+- **Total New Code**: ~758 lines of production code
 
 ## Testing the Implementation
 
