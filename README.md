@@ -34,23 +34,25 @@ To build and run OpenOS, you'll need:
 - **gcc** with 32-bit support (or i686-elf-gcc cross-compiler)
 - **nasm** (if you plan to extend the assembly code)
 - **make**
-- **qemu-system-i386** (for testing)
+- **qemu-system-i386** (for testing with QEMU)
+- **grub-pc-bin**, **xorriso**, **mtools** (for creating bootable ISO)
+- **VirtualBox** (optional, for running in VirtualBox)
 
 #### Installing Prerequisites
 
 **Ubuntu/Debian:**
 ```bash
-sudo apt-get install gcc-multilib nasm make qemu-system-x86
+sudo apt-get install gcc-multilib nasm make qemu-system-x86 grub-pc-bin xorriso mtools
 ```
 
 **Arch Linux:**
 ```bash
-sudo pacman -S gcc nasm make qemu-system-x86
+sudo pacman -S gcc nasm make qemu-system-x86 grub xorriso mtools
 ```
 
 **macOS (with Homebrew):**
 ```bash
-brew install i686-elf-gcc nasm make qemu
+brew install i686-elf-gcc nasm make qemu grub xorriso mtools
 ```
 
 ### Building
@@ -65,7 +67,9 @@ This will compile the kernel and produce `Kernel2.0/openos.bin`.
 
 ### Running
 
-To build and run the kernel in QEMU:
+#### Option 1: QEMU (Quick Testing)
+
+To build and run the kernel in QEMU with direct kernel boot:
 
 ```bash
 make run
@@ -84,6 +88,54 @@ OpenOS> _
 ```
 
 Type on your keyboard and press Enter to interact with the shell!
+
+#### Option 2: VirtualBox (Full Emulation)
+
+To create a bootable ISO and run in VirtualBox:
+
+```bash
+make run-vbox
+```
+
+This will:
+1. Build the kernel
+2. Create a bootable ISO image with GRUB (`openos.iso`)
+3. Create and configure a VirtualBox VM
+4. Start the VM with the ISO attached
+
+**Manual VirtualBox Setup:**
+
+If you prefer to set up VirtualBox manually:
+
+1. Create the ISO image:
+   ```bash
+   make iso
+   ```
+
+2. Create a new VirtualBox VM:
+   - Name: OpenOS
+   - Type: Other
+   - Version: Other/Unknown
+   - Memory: 512 MB (minimum)
+   - No hard disk needed
+
+3. Configure the VM:
+   - System → Boot Order: CD-ROM first
+   - System → Enable I/O APIC
+   - Storage → Add IDE Controller
+   - Storage → Attach `openos.iso` as CD-ROM
+
+4. Start the VM and enjoy!
+
+**Troubleshooting:** If you encounter any issues with VirtualBox, see the [VirtualBox Troubleshooting Guide](docs/VIRTUALBOX_TROUBLESHOOTING.md).
+
+#### Option 3: ISO in QEMU
+
+To test the ISO image in QEMU:
+
+```bash
+make run-iso
+```
 
 ### Cleaning
 
@@ -116,6 +168,8 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
 
 Additional documentation can be found in the `/docs` directory:
 
+- `VIRTUALBOX_QUICKSTART.md` - Quick start guide for VirtualBox
+- `VIRTUALBOX_TROUBLESHOOTING.md` - VirtualBox setup and troubleshooting
 - `architecture.md` - System architecture overview
 - `roadmap.md` - Future development plans
 - `Kernel2.0/README.md` - Detailed kernel documentation
