@@ -86,8 +86,8 @@ static uint8_t caps_lock = 0;
 /* Input buffer */
 #define INPUT_BUFFER_SIZE 256
 static char input_buffer[INPUT_BUFFER_SIZE];
-static size_t input_buffer_pos = 0;
-static uint8_t line_ready = 0;
+static volatile size_t input_buffer_pos = 0;
+static volatile uint8_t line_ready = 0;
 
 /* Initialize keyboard */
 void keyboard_init(void) {
