@@ -30,7 +30,7 @@ LDFLAGS += -Wl,--nmagic      # Don't align data segments to page boundaries
 LDFLAGS += -Wl,-z,noexecstack  # Mark stack as non-executable
 
 # Object files to link
-OBJS = boot.o kernel.o idt.o pic.o isr.o keyboard.o
+OBJS = boot.o kernel.o idt.o pic.o isr.o keyboard.o vmm.o
 
 # Default target: build the kernel
 all: $(TARGET).bin
@@ -57,6 +57,10 @@ isr.o: isr.S
 
 # Build keyboard driver
 keyboard.o: keyboard.c keyboard.h pic.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Build virtual memory manager
+vmm.o: vmm.c vmm.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Link all objects into final kernel binary
