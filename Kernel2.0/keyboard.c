@@ -99,9 +99,6 @@ void keyboard_init(void) {
 
 /* Keyboard interrupt handler */
 void keyboard_handler(void) {
-    /* DEBUG: Print a character to show interrupt fired */
-    terminal_put_char('K');
-    
     /* Read scan code from keyboard */
     uint8_t scancode = inb(KEYBOARD_DATA_PORT);
     
