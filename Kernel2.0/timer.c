@@ -29,6 +29,11 @@ void timer_init(uint32_t frequency) {
     
     /* Reset tick counter */
     system_ticks = 0;
+    
+    /* Enable timer interrupt (IRQ0) in PIC */
+    uint8_t mask = inb(PIC1_DATA);
+    mask &= ~(1 << 0);  /* Clear bit 0 to enable IRQ0 */
+    outb(PIC1_DATA, mask);
 }
 
 /*
