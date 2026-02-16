@@ -1,11 +1,11 @@
-# OpenOS - Advanced Educational Kernel
+# OpenOS - Advanced Research Kernel
 
-OpenOS is an educational, open-source operating system built from scratch for the x86 architecture. It features a **modular monolithic architecture**, complete exception handling, memory management, and timer support - a production-ready foundation for learning OS development.
+OpenOS is a research-oriented, open-source operating system built from scratch for the x86 architecture. It features a **modular monolithic architecture**, complete exception handling, memory management, and timer support - a production-ready foundation for OS research and experimentation.
 
 The goal is to build a small, understandable OS **from zero**, inspired by hobby OS projects like MyraOS, xv6, and OSDev examples — but implemented with **our own code**, fully documented, and open for community contribution.
 
 ## 🎯 Mission
-To create a collaborative OS development environment where students, beginners, and low-level enthusiasts can learn:
+To create a collaborative OS development environment where researchers, academics, and low-level system developers can explore:
 
 - How CPUs boot an OS  
 - What a kernel actually does  
@@ -89,7 +89,7 @@ make run
 You should see:
 
 ```
-OpenOS - Advanced Educational Kernel
+OpenOS - Advanced Research Kernel
 ====================================
 Running in 32-bit protected mode.
 
@@ -211,7 +211,7 @@ make run
 This launches QEMU with the kernel. You should see:
 
 ```
-OpenOS - Educational Kernel Prototype
+OpenOS - Research Kernel Prototype
 -------------------------------------
 Running in 32-bit protected mode.
 Initializing interrupts...
