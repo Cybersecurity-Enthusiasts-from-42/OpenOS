@@ -48,7 +48,10 @@ void pic_send_eoi(uint8_t irq) {
     outb(PIC1_CMD, PIC_EOI);
 }
 
-/* Unmask (enable) a specific IRQ */
+/*
+ * Unmask (enable) a specific IRQ
+ * @param irq: IRQ number (0-15) to enable
+ */
 void pic_unmask_irq(uint8_t irq) {
     uint16_t port;
     uint8_t value;
@@ -65,7 +68,10 @@ void pic_unmask_irq(uint8_t irq) {
     outb(port, value);
 }
 
-/* Mask (disable) a specific IRQ */
+/*
+ * Mask (disable) a specific IRQ
+ * @param irq: IRQ number (0-15) to disable
+ */
 void pic_mask_irq(uint8_t irq) {
     uint16_t port;
     uint8_t value;
