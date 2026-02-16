@@ -22,10 +22,12 @@ OpenOS follows a **modular monolithic kernel architecture**:
 ```
 ├── arch/x86/          # Architecture-specific code (IDT, ISR, PIC, exceptions)
 ├── kernel/            # Core kernel (initialization, panic handling)
-├── memory/            # Memory management (PMM, VMM, heap)
+├── kernel/cpu/        # CPU simulation (pipeline, single-cycle, performance)
+├── memory/            # Memory management (PMM, VMM, heap, cache, bus)
 ├── drivers/           # Hardware drivers (console, keyboard, timer)
 ├── fs/                # File systems (VFS - future)
 ├── process/           # Process management (future)
+├── benchmarks/        # Performance benchmarks and test programs
 └── include/           # Common headers (types, multiboot)
 ```
 
@@ -51,6 +53,15 @@ See [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) for d
 - ✅ **Timer driver (PIT)** - Programmable Interval Timer at 100 Hz
 - ✅ **Keyboard driver** - PS/2 keyboard with line buffering
 - ✅ **VirtualBox automation** - Automated VM creation and ISO deployment
+- ✅ **CPU Architecture Simulator** - 5-stage pipeline, single-cycle CPU, cache, and bus simulation
+
+### Phase 0.5 - CPU Simulation Framework (✅ Complete)
+- ✅ **5-Stage Pipelined CPU** - IF/ID/EX/MEM/WB with hazard detection
+- ✅ **Single-Cycle CPU** - Reference implementation for comparison
+- ✅ **Direct-Mapped Cache** - 256 lines, 32-byte blocks, hit/miss tracking
+- ✅ **Memory Bus Simulator** - 64-bit width, 800 MHz, latency modeling
+- ✅ **Performance Counters** - CPI, MIPS, cache statistics
+- ✅ **Benchmark Suite** - Compare pipeline vs single-cycle performance
 
 ### Phase 1 - Process Management (🚧 Planned)
 - 🔲 Process structures and state management
@@ -111,6 +122,42 @@ make run-vbox
 ```
 
 This automatically creates a VM, builds an ISO, and launches OpenOS in VirtualBox!
+
+### Run CPU Architecture Benchmark
+
+```bash
+make benchmark
+```
+
+This runs a comprehensive benchmark comparing the 5-stage pipelined CPU against the single-cycle CPU model:
+
+```
+OpenOS CPU Architecture Simulator
+==================================
+
+=== Pipelined CPU Benchmark ===
+Instructions executed: 8192
+Total cycles: 10245
+Pipeline stalls: 2048
+CPI: 1.251
+MIPS: 799.61
+
+=== Single-Cycle CPU Benchmark ===
+Instructions executed: 8192
+Total cycles: 8192
+CPI: 1.000
+MIPS: 1000.00
+
+=== Cache Performance Benchmark ===
+Cache hits: 3316, Cache misses: 6684
+Hit rate: 33.16%
+
+=== Memory Bus Performance ===
+Bus frequency: 800 MHz, Memory latency: 24 cycles (30.0 ns)
+Throughput: 6103.52 MB/s
+```
+
+See [kernel/cpu/README.md](kernel/cpu/README.md) for detailed documentation on the CPU simulator.
 
 ## 🛠️ Build & Run
 
