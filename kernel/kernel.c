@@ -40,13 +40,15 @@ void kmain(void) {
     /* Initialize timer (100 Hz) */
     console_write("[4/5] Initializing timer...\n");
     timer_init(100);
+    
+    /* Install timer interrupt handler (IRQ0 = interrupt 0x20) */
     idt_set_gate(0x20, (uint32_t)irq0_handler, KERNEL_CODE_SEGMENT, IDT_FLAGS_KERNEL);
     
     /* Install keyboard interrupt handler (IRQ1 = interrupt 0x21) */
     console_write("[5/5] Initializing keyboard...\n");
     idt_set_gate(0x21, (uint32_t)irq1_handler, KERNEL_CODE_SEGMENT, IDT_FLAGS_KERNEL);
     
-    /* Initialize keyboard */
+    /* Initialize keyboard (this will unmask IRQ1) */
     keyboard_init();
     
     /* TODO: When Multiboot info is passed to kmain(), uncomment these lines:
@@ -59,6 +61,9 @@ void kmain(void) {
     
     /* Enable interrupts */
     __asm__ __volatile__("sti");
+    
+    /* Now that interrupts are enabled, unmask the timer IRQ */
+    pic_unmask_irq(0);
     
     console_write("\n*** System Ready ***\n");
     console_write("- Exception handling: Active\n");

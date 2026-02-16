@@ -162,9 +162,7 @@ void exception_handler(struct exception_registers *regs) {
     console_write("======================================\n");
     
     /* Halt the system */
-    __asm__ __volatile__("cli; hlt");
-    
-    /* Infinite loop in case CPU wakes up */
+    __asm__ __volatile__("cli");
     while(1) {
         __asm__ __volatile__("hlt");
     }

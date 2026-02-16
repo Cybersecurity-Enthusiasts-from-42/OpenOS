@@ -47,3 +47,43 @@ void pic_send_eoi(uint8_t irq) {
     /* Always send EOI to master PIC (for IRQ 0-7 and slave IRQs) */
     outb(PIC1_CMD, PIC_EOI);
 }
+
+/*
+ * Unmask (enable) a specific IRQ
+ * @param irq: IRQ number (0-15) to enable
+ */
+void pic_unmask_irq(uint8_t irq) {
+    uint16_t port;
+    uint8_t value;
+    
+    if (irq < 8) {
+        port = PIC1_DATA;
+    } else {
+        port = PIC2_DATA;
+        irq -= 8;
+    }
+    
+    value = inb(port);
+    value &= ~(1 << irq);  /* Clear bit to unmask */
+    outb(port, value);
+}
+
+/*
+ * Mask (disable) a specific IRQ
+ * @param irq: IRQ number (0-15) to disable
+ */
+void pic_mask_irq(uint8_t irq) {
+    uint16_t port;
+    uint8_t value;
+    
+    if (irq < 8) {
+        port = PIC1_DATA;
+    } else {
+        port = PIC2_DATA;
+        irq -= 8;
+    }
+    
+    value = inb(port);
+    value |= (1 << irq);  /* Set bit to mask */
+    outb(port, value);
+}
