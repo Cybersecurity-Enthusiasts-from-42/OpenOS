@@ -40,13 +40,15 @@ void kmain(void) {
     /* Initialize timer (100 Hz) */
     console_write("[4/5] Initializing timer...\n");
     timer_init(100);
+    
+    /* Install timer interrupt handler (IRQ0 = interrupt 0x20) */
     idt_set_gate(0x20, (uint32_t)irq0_handler, KERNEL_CODE_SEGMENT, IDT_FLAGS_KERNEL);
     
     /* Install keyboard interrupt handler (IRQ1 = interrupt 0x21) */
     console_write("[5/5] Initializing keyboard...\n");
     idt_set_gate(0x21, (uint32_t)irq1_handler, KERNEL_CODE_SEGMENT, IDT_FLAGS_KERNEL);
     
-    /* Initialize keyboard */
+    /* Initialize keyboard (this will unmask IRQ1) */
     keyboard_init();
     
     /* TODO: When Multiboot info is passed to kmain(), uncomment these lines:
@@ -57,22 +59,22 @@ void kmain(void) {
      * vmm_init();
      */
     
-    /* Enable interrupts */
-    __asm__ __volatile__("sti");
+    /* TEMPORARY: Do NOT enable interrupts yet to test if kernel works without them */
+    /* __asm__ __volatile__("sti"); */
     
-    console_write("\n*** System Ready ***\n");
+    /* TEMPORARY: Do NOT unmask timer interrupt */
+    /* pic_unmask_irq(0); */
+    
+    console_write("\n*** System Ready (interrupts DISABLED for testing) ***\n");
     console_write("- Exception handling: Active\n");
-    console_write("- Timer interrupts: 100 Hz\n");
-    console_write("- Keyboard: Ready\n\n");
-    console_write("Type commands and press Enter!\n\n");
+    console_write("- Timer interrupts: DISABLED\n");
+    console_write("- Keyboard: DISABLED\n\n");
+    console_write("Kernel initialized successfully without interrupts.\n");
+    console_write("This confirms the boot process and console work correctly.\n\n");
     
-    /* Interactive prompt loop */
-    char input[256];
-    while (1) {
-        console_write("OpenOS> ");
-        keyboard_get_line(input, sizeof(input));
-        console_write("You typed: ");
-        console_write(input);
-        console_write("\n");
+    /* Halt the system */
+    console_write("Halting system...\n");
+    while(1) {
+        __asm__ __volatile__("hlt");
     }
 }

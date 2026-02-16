@@ -30,4 +30,10 @@ void pic_init(void);
 /* Send End Of Interrupt signal */
 void pic_send_eoi(uint8_t irq);
 
+/* Unmask (enable) a specific IRQ */
+void pic_unmask_irq(uint8_t irq);
+
+/* Mask (disable) a specific IRQ */
+void pic_mask_irq(uint8_t irq);
+
 #endif /* OPENOS_ARCH_X86_PIC_H */

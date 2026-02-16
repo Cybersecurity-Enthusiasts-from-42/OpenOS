@@ -14,6 +14,9 @@ static uint32_t timer_frequency = 0;
 
 /*
  * Initialize the timer with the specified frequency
+ * Note: This function configures the PIT hardware but does NOT
+ * enable the IRQ in the PIC. Call pic_unmask_irq(0) separately
+ * after setting up the IDT handler to avoid race conditions.
  */
 void timer_init(uint32_t frequency) {
     timer_frequency = frequency;
@@ -31,10 +34,8 @@ void timer_init(uint32_t frequency) {
     /* Reset tick counter */
     system_ticks = 0;
     
-    /* Enable timer interrupt (IRQ0) in PIC */
-    uint8_t mask = inb(PIC1_DATA);
-    mask &= ~(1 << 0);  /* Clear bit 0 to enable IRQ0 */
-    outb(PIC1_DATA, mask);
+    /* Do NOT enable interrupt here - let the kernel do it after
+     * the IDT handler is registered to ensure proper initialization order */
 }
 
 /*
