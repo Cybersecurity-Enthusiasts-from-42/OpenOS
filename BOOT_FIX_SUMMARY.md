@@ -28,12 +28,12 @@ kernel/panic.c:26:66: warning: unused parameter 'line' [-Wunused-parameter]
 - The QEMU command line did not specify a boot order
 
 **Solution:** 
-1. Updated `grub.cfg` to explicitly set the root device to CD-ROM
+1. Updated `grub.cfg` to explicitly set the root device to CD-ROM using standard GRUB device syntax
 2. Modified QEMU invocation to use `-boot d` flag, which forces CD-ROM as the first boot device
 3. Applied the fix consistently across all boot methods
 
 **Changes Made:**
-- `grub.cfg`: Added `set root='cd0'` to explicitly specify CD-ROM as boot device
+- `grub.cfg`: Added `set root='(cd0)'` to explicitly specify CD-ROM as boot device using proper GRUB device syntax
 - `tools/run-qemu.sh`: Added `-boot d` flag to QEMU command
 - `Makefile`: Updated `run-iso` target to include `-boot d` flag
 
@@ -70,7 +70,7 @@ The `-boot d` flag tells QEMU to boot from the CD-ROM drive first:
 Without this flag, QEMU defaults to trying `a`, then `c`, then `d`, causing the boot errors seen in the original issue.
 
 ### GRUB Root Device
-Setting `set root='cd0'` in grub.cfg ensures GRUB knows to look for boot files on the CD-ROM device, improving boot reliability.
+Setting `set root='(cd0)'` in grub.cfg ensures GRUB knows to look for boot files on the CD-ROM device, improving boot reliability. The parentheses syntax is the standard GRUB device notation for better compatibility across different GRUB versions.
 
 ---
 
