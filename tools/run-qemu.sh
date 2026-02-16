@@ -79,6 +79,7 @@ echo ""
 # Launch QEMU with ISO
 # Using ISO boot is more reliable than direct kernel boot
 # and works with all QEMU versions (including 7.0+)
-qemu-system-i386 -cdrom "$ISO_FILE"
+# -boot d specifies boot from CD-ROM first, avoiding disk read attempts
+qemu-system-i386 -cdrom "$ISO_FILE" -boot d
 
 echo -e "${YELLOW}QEMU exited${NC}"

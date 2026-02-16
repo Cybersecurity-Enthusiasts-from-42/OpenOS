@@ -179,7 +179,7 @@ iso: $(OUTPUT_BIN)
 run-iso: iso
 	@echo "Running OpenOS ISO in QEMU..."
 	@if command -v qemu-system-i386 &> /dev/null; then \
-		qemu-system-i386 -cdrom openos.iso; \
+		qemu-system-i386 -cdrom openos.iso -boot d; \
 	else \
 		echo "Error: qemu-system-i386 not found"; \
 		exit 1; \
