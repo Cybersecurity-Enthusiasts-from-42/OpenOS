@@ -54,9 +54,17 @@ ARCH_OBJS = $(ARCH_DIR)/boot.o \
 KERNEL_OBJS = $(KERNEL_DIR)/kernel.o \
               $(KERNEL_DIR)/panic.o
 
+# CPU simulation object files
+CPU_DIR = $(KERNEL_DIR)/cpu
+CPU_OBJS = $(CPU_DIR)/pipeline.o \
+           $(CPU_DIR)/single_cycle.o \
+           $(CPU_DIR)/performance.o
+
 # Memory management object files
 MEMORY_OBJS = $(MEMORY_DIR)/pmm.o \
-              $(MEMORY_DIR)/vmm.o
+              $(MEMORY_DIR)/vmm.o \
+              $(MEMORY_DIR)/cache.o \
+              $(MEMORY_DIR)/bus.o
 
 # Driver object files
 DRIVERS_OBJS = $(DRIVERS_DIR)/console.o \
@@ -64,7 +72,7 @@ DRIVERS_OBJS = $(DRIVERS_DIR)/console.o \
                $(DRIVERS_DIR)/timer.o
 
 # All object files
-OBJS = $(ARCH_OBJS) $(KERNEL_OBJS) $(MEMORY_OBJS) $(DRIVERS_OBJS)
+OBJS = $(ARCH_OBJS) $(KERNEL_OBJS) $(CPU_OBJS) $(MEMORY_OBJS) $(DRIVERS_OBJS)
 
 # Default target: build the kernel
 all: $(OUTPUT_BIN)
@@ -99,11 +107,27 @@ $(KERNEL_DIR)/kernel.o: $(KERNEL_DIR)/kernel.c $(KERNEL_DIR)/kernel.h
 $(KERNEL_DIR)/panic.o: $(KERNEL_DIR)/panic.c $(KERNEL_DIR)/panic.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# CPU simulation files
+$(CPU_DIR)/pipeline.o: $(CPU_DIR)/pipeline.c $(CPU_DIR)/pipeline.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(CPU_DIR)/single_cycle.o: $(CPU_DIR)/single_cycle.c $(CPU_DIR)/single_cycle.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(CPU_DIR)/performance.o: $(CPU_DIR)/performance.c $(CPU_DIR)/performance.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
 # Memory management files
 $(MEMORY_DIR)/pmm.o: $(MEMORY_DIR)/pmm.c $(MEMORY_DIR)/pmm.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(MEMORY_DIR)/vmm.o: $(MEMORY_DIR)/vmm.c $(MEMORY_DIR)/vmm.h $(MEMORY_DIR)/pmm.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(MEMORY_DIR)/cache.o: $(MEMORY_DIR)/cache.c $(MEMORY_DIR)/cache.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(MEMORY_DIR)/bus.o: $(MEMORY_DIR)/bus.c $(MEMORY_DIR)/bus.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Driver files
@@ -119,6 +143,25 @@ $(DRIVERS_DIR)/timer.o: $(DRIVERS_DIR)/timer.c $(DRIVERS_DIR)/timer.h $(ARCH_DIR
 # Link all objects into final kernel binary
 $(OUTPUT_BIN): $(OUTPUT_DIR) $(OBJS) linker.ld
 	$(CC) -T linker.ld -o $@ -m32 $(LDFLAGS) $(OBJS)
+
+# Benchmark executable (hosted application with standard library)
+BENCHMARK_DIR = benchmarks
+BENCHMARK_BIN = $(BENCHMARK_DIR)/pipeline_vs_single
+BENCHMARK_CFLAGS = -std=gnu99 -Wall -Wextra -O2 -I. -I./include
+
+$(BENCHMARK_BIN): $(BENCHMARK_DIR)/pipeline_vs_single.c $(CPU_DIR)/pipeline.c $(CPU_DIR)/single_cycle.c $(CPU_DIR)/performance.c $(MEMORY_DIR)/cache.c $(MEMORY_DIR)/bus.c
+	$(shell command -v gcc 2> /dev/null || echo gcc) $(BENCHMARK_CFLAGS) -o $@ \
+		$(BENCHMARK_DIR)/pipeline_vs_single.c \
+		$(CPU_DIR)/pipeline.c \
+		$(CPU_DIR)/single_cycle.c \
+		$(CPU_DIR)/performance.c \
+		$(MEMORY_DIR)/cache.c \
+		$(MEMORY_DIR)/bus.c
+
+# Build and run benchmark
+benchmark: $(BENCHMARK_BIN)
+	@echo "Running CPU architecture benchmark..."
+	@./$(BENCHMARK_BIN)
 
 # Run kernel in QEMU (uses ISO boot)
 run: $(OUTPUT_BIN)
@@ -150,8 +193,9 @@ run-vbox: iso
 
 # Clean build artifacts
 clean:
-	rm -f $(ARCH_DIR)/*.o $(KERNEL_DIR)/*.o $(MEMORY_DIR)/*.o $(DRIVERS_DIR)/*.o
+	rm -f $(ARCH_DIR)/*.o $(KERNEL_DIR)/*.o $(CPU_DIR)/*.o $(MEMORY_DIR)/*.o $(DRIVERS_DIR)/*.o
 	rm -f $(OUTPUT_BIN)
+	rm -f $(BENCHMARK_BIN)
 	rm -f openos.iso
 	rm -rf iso
 
@@ -161,6 +205,7 @@ help:
 	@echo "=================================================="
 	@echo "Targets:"
 	@echo "  all      - Build the kernel (default)"
+	@echo "  benchmark - Build and run CPU architecture benchmark"
 	@echo "  clean    - Remove build artifacts"
 	@echo "  run      - Build and run in QEMU (via bootable ISO)"
 	@echo "  iso      - Create bootable ISO image with GRUB"
@@ -171,12 +216,14 @@ help:
 	@echo "Directory Structure:"
 	@echo "  arch/x86/   - x86 architecture-specific code"
 	@echo "  kernel/     - Core kernel code"
-	@echo "  memory/     - Memory management (PMM, VMM, heap)"
+	@echo "  kernel/cpu/ - CPU simulation components (pipeline, single-cycle, performance)"
+	@echo "  memory/     - Memory management (PMM, VMM, heap, cache, bus)"
 	@echo "  drivers/    - Hardware drivers (console, keyboard, timer)"
 	@echo "  fs/         - File systems (VFS, ramfs)"
 	@echo "  process/    - Process management"
+	@echo "  benchmarks/ - Benchmark programs"
 	@echo "  include/    - Common headers"
 	@echo ""
 	@echo "Compiler: $(CC)"
 
-.PHONY: all clean run iso run-iso run-vbox help
+.PHONY: all clean run iso run-iso run-vbox help benchmark
