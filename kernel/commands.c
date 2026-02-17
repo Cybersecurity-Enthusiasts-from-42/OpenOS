@@ -5,9 +5,11 @@
 #include "commands.h"
 #include "shell.h"
 #include "string.h"
+#include "kernel.h"
 #include "../drivers/console.h"
 #include "../drivers/timer.h"
 #include "../arch/x86/ports.h"
+#include "../fs/vfs.h"
 
 /* Forward declaration for accessing command table */
 const shell_command_t* shell_get_commands(int* count);
@@ -176,58 +178,277 @@ void cmd_uptime(int argc, char** argv) {
 }
 
 /*
- * PWD command - Print current working directory (placeholder)
+ * PWD command - Print current working directory
  */
 void cmd_pwd(int argc, char** argv) {
     (void)argc;  /* Unused parameter */
     (void)argv;  /* Unused parameter */
     
-    console_write("/\n");
-    console_write("(Filesystem not yet implemented - using root directory)\n");
+    vfs_node_t* current = kernel_get_current_directory();
+    if (!current) {
+        console_write("/\n");
+        return;
+    }
+    
+    /* Build path by walking up to root */
+    char path[256];
+    char temp[256];
+    path[0] = '\0';
+    
+    vfs_node_t* node = current;
+    while (node && node->parent != node) {  /* Stop at root (root is its own parent) */
+        /* Prepend current node name */
+        string_copy(temp, "/");
+        string_concat(temp, node->name);
+        string_concat(temp, path);
+        string_copy(path, temp);
+        
+        node = node->parent;
+    }
+    
+    /* If path is empty, we're at root */
+    if (path[0] == '\0') {
+        console_write("/\n");
+    } else {
+        console_write(path);
+        console_write("\n");
+    }
 }
 
 /*
- * LS command - List directory contents (placeholder)
+ * LS command - List directory contents
  */
 void cmd_ls(int argc, char** argv) {
-    (void)argc;  /* Unused parameter */
-    (void)argv;  /* Unused parameter */
+    vfs_node_t* dir;
     
-    console_write("Listing: /\n");
-    console_write("  (Filesystem not yet implemented)\n");
-    console_write("  TODO: Implement filesystem to show actual directory contents\n");
+    if (argc < 2) {
+        /* List current directory */
+        dir = kernel_get_current_directory();
+    } else {
+        /* List specified directory */
+        if (argv[1][0] == '/') {
+            /* Absolute path */
+            dir = vfs_resolve_path(argv[1]);
+        } else {
+            /* Relative path - build absolute path */
+            char abs_path[256];
+            vfs_node_t* current = kernel_get_current_directory();
+            
+            /* Build current path first */
+            char current_path[256];
+            current_path[0] = '\0';
+            
+            if (current && current->parent != current) {
+                vfs_node_t* node = current;
+                char temp[256];
+                while (node && node->parent != node) {
+                    string_copy(temp, "/");
+                    string_concat(temp, node->name);
+                    string_concat(temp, current_path);
+                    string_copy(current_path, temp);
+                    node = node->parent;
+                }
+            }
+            
+            if (current_path[0] == '\0') {
+                string_copy(abs_path, "/");
+            } else {
+                string_copy(abs_path, current_path);
+            }
+            
+            string_concat(abs_path, "/");
+            string_concat(abs_path, argv[1]);
+            
+            dir = vfs_resolve_path(abs_path);
+        }
+        
+        if (!dir) {
+            console_write("ls: cannot access '");
+            console_write(argv[1]);
+            console_write("': No such file or directory\n");
+            return;
+        }
+    }
+    
+    if (!dir) {
+        console_write("ls: error accessing directory\n");
+        return;
+    }
+    
+    if (dir->type != NODE_DIRECTORY) {
+        console_write("ls: '");
+        console_write(argv[1]);
+        console_write("': Not a directory\n");
+        return;
+    }
+    
+    /* List directory contents */
+    for (uint32_t i = 0; i < dir->child_count; i++) {
+        vfs_node_t* child = dir->children[i];
+        if (child) {
+            console_write(child->name);
+            if (child->type == NODE_DIRECTORY) {
+                console_write("/");
+            }
+            console_write(" ");
+        }
+    }
+    console_write("\n");
 }
 
 /*
- * CD command - Change directory (placeholder)
+ * CD command - Change directory
  */
 void cmd_cd(int argc, char** argv) {
     if (argc < 2) {
         console_write("Usage: cd <directory>\n");
-        console_write("(Filesystem not yet implemented)\n");
         return;
     }
     
-    console_write("Cannot change to directory: ");
-    console_write(argv[1]);
-    console_write("\n");
-    console_write("(Filesystem not yet implemented)\n");
+    vfs_node_t* target;
+    
+    /* Handle special cases */
+    if (string_compare(argv[1], "/") == 0) {
+        /* Go to root */
+        target = vfs_get_root();
+    } else if (string_compare(argv[1], ".") == 0) {
+        /* Stay in current directory */
+        return;
+    } else if (string_compare(argv[1], "..") == 0) {
+        /* Go to parent directory */
+        vfs_node_t* current = kernel_get_current_directory();
+        if (current && current->parent) {
+            target = current->parent;
+        } else {
+            target = vfs_get_root();
+        }
+    } else if (argv[1][0] == '/') {
+        /* Absolute path */
+        target = vfs_resolve_path(argv[1]);
+    } else {
+        /* Relative path - build absolute path */
+        char abs_path[256];
+        vfs_node_t* current = kernel_get_current_directory();
+        
+        /* Build current path first */
+        char current_path[256];
+        current_path[0] = '\0';
+        
+        if (current && current->parent != current) {
+            vfs_node_t* node = current;
+            char temp[256];
+            while (node && node->parent != node) {
+                string_copy(temp, "/");
+                string_concat(temp, node->name);
+                string_concat(temp, current_path);
+                string_copy(current_path, temp);
+                node = node->parent;
+            }
+        }
+        
+        if (current_path[0] == '\0') {
+            string_copy(abs_path, "/");
+        } else {
+            string_copy(abs_path, current_path);
+        }
+        
+        string_concat(abs_path, "/");
+        string_concat(abs_path, argv[1]);
+        
+        target = vfs_resolve_path(abs_path);
+    }
+    
+    if (!target) {
+        console_write("cd: ");
+        console_write(argv[1]);
+        console_write(": No such file or directory\n");
+        return;
+    }
+    
+    if (target->type != NODE_DIRECTORY) {
+        console_write("cd: ");
+        console_write(argv[1]);
+        console_write(": Not a directory\n");
+        return;
+    }
+    
+    kernel_set_current_directory(target);
 }
 
 /*
- * CAT command - Display file contents (placeholder)
+ * CAT command - Display file contents
  */
 void cmd_cat(int argc, char** argv) {
     if (argc < 2) {
         console_write("Usage: cat <filename>\n");
-        console_write("(Filesystem not yet implemented)\n");
         return;
     }
     
-    console_write("Cannot read file: ");
-    console_write(argv[1]);
-    console_write("\n");
-    console_write("(Filesystem not yet implemented)\n");
+    vfs_node_t* file;
+    
+    if (argv[1][0] == '/') {
+        /* Absolute path */
+        file = vfs_resolve_path(argv[1]);
+    } else {
+        /* Relative path - build absolute path */
+        char abs_path[256];
+        vfs_node_t* current = kernel_get_current_directory();
+        
+        /* Build current path first */
+        char current_path[256];
+        current_path[0] = '\0';
+        
+        if (current && current->parent != current) {
+            vfs_node_t* node = current;
+            char temp[256];
+            while (node && node->parent != node) {
+                string_copy(temp, "/");
+                string_concat(temp, node->name);
+                string_concat(temp, current_path);
+                string_copy(current_path, temp);
+                node = node->parent;
+            }
+        }
+        
+        if (current_path[0] == '\0') {
+            string_copy(abs_path, "/");
+        } else {
+            string_copy(abs_path, current_path);
+        }
+        
+        string_concat(abs_path, "/");
+        string_concat(abs_path, argv[1]);
+        
+        file = vfs_resolve_path(abs_path);
+    }
+    
+    if (!file) {
+        console_write("cat: ");
+        console_write(argv[1]);
+        console_write(": No such file or directory\n");
+        return;
+    }
+    
+    if (file->type != NODE_FILE) {
+        console_write("cat: ");
+        console_write(argv[1]);
+        console_write(": Is a directory\n");
+        return;
+    }
+    
+    /* Read and display file contents */
+    uint8_t buffer[VFS_MAX_FILE_SIZE];
+    ssize_t bytes_read = vfs_read(file, 0, file->length, buffer);
+    
+    if (bytes_read < 0) {
+        console_write("cat: error reading file\n");
+        return;
+    }
+    
+    /* Display contents */
+    for (ssize_t i = 0; i < bytes_read; i++) {
+        console_put_char((char)buffer[i]);
+    }
 }
 
 /*

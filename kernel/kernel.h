@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include "../fs/vfs.h"
 
 /* GDT segment selectors (GRUB's GDT) */
 #define KERNEL_CODE_SEGMENT 0x10   /* GRUB uses 0x10 for code */
@@ -20,7 +21,14 @@
 #define IDT_GATE_INT32      0x0E
 #define IDT_FLAGS_KERNEL    (IDT_GATE_PRESENT | IDT_GATE_INT32)  /* 0x8E */
 
+/* Current working directory */
+extern vfs_node_t* current_directory;
+
 /* Kernel main entry point */
 void kmain(void);
+
+/* Current directory functions */
+vfs_node_t* kernel_get_current_directory(void);
+void kernel_set_current_directory(vfs_node_t* dir);
 
 #endif /* OPENOS_KERNEL_H */
