@@ -10,6 +10,11 @@
 #include <stdint.h>
 #include <stddef.h>
 
+/* Define ssize_t if not available */
+#ifndef SSIZE_MAX
+typedef int32_t ssize_t;
+#endif
+
 /* Maximum limits for static allocation */
 #define VFS_MAX_NODES       128
 #define VFS_MAX_CHILDREN    32
