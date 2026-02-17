@@ -4,7 +4,7 @@ OpenOS is a research-oriented, open-source operating system built from scratch f
 
 The goal is to build a small, understandable OS **from zero**, inspired by hobby OS projects like MyraOS, xv6, and OSDev examples — but implemented with **our own code**, fully documented, and open for community contribution.
 
-## 🎯 Mission
+##  Mission
 To create a collaborative OS development environment where researchers, academics, and low-level system developers can explore:
 
 - How CPUs boot an OS  
@@ -15,7 +15,7 @@ To create a collaborative OS development environment where researchers, academic
 
 All with clean, simple, modern C + Assembly code in a **well-organized modular structure**.
 
-## 🏗️ Architecture
+##  Architecture
 
 OpenOS follows a **modular monolithic kernel architecture**:
 
@@ -40,7 +40,7 @@ OpenOS follows a **modular monolithic kernel architecture**:
 
 See [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) for detailed architecture documentation.
 
-## ✨ Features
+##  Features
 
 ### Phase 0 - Core Foundation (✅ Complete)
 - ✅ **Modular monolithic architecture** - Clean separation of concerns
@@ -63,14 +63,14 @@ See [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) for d
 - ✅ **Performance Counters** - CPI, MIPS, cache statistics
 - ✅ **Benchmark Suite** - Compare pipeline vs single-cycle performance
 
-### Phase 1 - Process Management (🚧 Planned)
+### Phase 1 - Process Management ( Planned)
 - 🔲 Process structures and state management
 - 🔲 Context switching between processes
 - 🔲 Round-robin scheduler
 - 🔲 fork() system call
 - 🔲 Basic process management
 
-### Future Phases (📋 Roadmap)
+### Future Phases ( Roadmap)
 - Kernel heap allocator
 - System calls and user mode
 - Shell and userland programs
@@ -78,7 +78,7 @@ See [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) for d
 - Advanced scheduling
 - And more! See [roadmap.md](docs/roadmap/roadmap.md)
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Build and Run (QEMU)
 
@@ -222,7 +222,7 @@ OpenOS> _
 
 Type on your keyboard and press Enter to interact with the shell!
 
-## 📖 Phase 0 Implementation Details
+##  Phase 0 Implementation Details
 
 OpenOS Phase 0 includes complete implementations of:
 
@@ -234,7 +234,7 @@ OpenOS Phase 0 includes complete implementations of:
 
 For complete implementation details, see [docs/roadmap/UPGRADE_PHASE0.md](docs/roadmap/UPGRADE_PHASE0.md).
 
-## 🧪 Testing Exception Handling
+##  Testing Exception Handling
 
 Want to see the exception handler in action? Add this to kernel.c:
 
@@ -302,7 +302,7 @@ To remove build artifacts:
 make clean
 ```
 
-## 🤝 Contributing
+##  Contributing
 
 OpenOS welcomes contributions at all levels! Whether you're fixing a bug, adding a feature, improving documentation, or just learning, your contributions are valuable.
 
@@ -321,7 +321,7 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
 5. Push to your fork (`git push origin feature/amazing-feature`)
 6. Open a Pull Request
 
-## 📚 Documentation
+## Documentation
 
 The `/docs` directory contains comprehensive documentation organized by topic:
 
@@ -345,7 +345,7 @@ The `/docs` directory contains comprehensive documentation organized by topic:
   - [Development Journal](docs/journal/DEVELOPMENT_LOG.md) - Development progress log
   - [Chapters](docs/chapters/) - Structured learning by topic
 
-## 📊 Project Stats
+##  Project Stats
 
 - **Lines of Code**: ~2,400 (kernel + documentation)
 - **Source Files**: 33 (organized in 7 directories)
@@ -355,5 +355,5 @@ The `/docs` directory contains comprehensive documentation organized by topic:
 - **Supported Platforms**: QEMU, VirtualBox, Bochs
 - **Documentation**: 20,000+ lines (including architecture docs)
 
-## 📄 License
+## License
 MIT License — free to use, modify, and contribute.
