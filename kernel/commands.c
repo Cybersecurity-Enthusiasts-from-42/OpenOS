@@ -125,7 +125,12 @@ void cmd_uptime(int argc, char** argv) {
     
     uint64_t uptime_ms = timer_get_uptime_ms();
     
-    /* Use 32-bit arithmetic to avoid 64-bit division */
+    /*
+     * Use 32-bit arithmetic to avoid 64-bit division library dependency.
+     * NOTE: This will wrap after ~49.7 days (2^32 milliseconds).
+     * This is acceptable for an educational OS but should be addressed
+     * if the system needs to track longer uptimes.
+     */
     uint32_t uptime_ms_low = (uint32_t)uptime_ms;
     
     /* Calculate time components */
@@ -234,7 +239,11 @@ void cmd_reboot(int argc, char** argv) {
     
     console_write("Rebooting system...\n");
     
-    /* Give time for message to display */
+    /*
+     * Give time for message to display.
+     * NOTE: Busy-wait loop timing is CPU-speed dependent.
+     * On typical systems this provides ~100-500ms delay.
+     */
     for (volatile int i = 0; i < 10000000; i++) {
         /* Busy wait */
     }

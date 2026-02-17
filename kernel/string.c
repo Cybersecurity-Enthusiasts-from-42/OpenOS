@@ -4,7 +4,12 @@
 
 #include "string.h"
 
-/* Static pointer for string_tokenize */
+/*
+ * Static pointer for string_tokenize
+ * NOTE: This makes string_tokenize non-reentrant. It is not safe for
+ * concurrent use or in interrupt handlers. This is acceptable for the
+ * single-threaded shell but should be considered if multitasking is added.
+ */
 static char* tokenize_last = 0;
 
 /*
