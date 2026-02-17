@@ -18,6 +18,9 @@ int string_compare(const char* str1, const char* str2);
 /* Copy a string from source to destination */
 char* string_copy(char* dest, const char* src);
 
+/* Concatenate two strings */
+char* string_concat(char* dest, const char* src);
+
 /* Tokenize a string (similar to strtok) */
 char* string_tokenize(char* str, const char* delim);
 

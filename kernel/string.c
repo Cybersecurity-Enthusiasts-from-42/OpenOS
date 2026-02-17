@@ -51,6 +51,30 @@ char* string_copy(char* dest, const char* src) {
 }
 
 /*
+ * Concatenate two strings
+ * Appends src to the end of dest
+ * Returns pointer to destination
+ */
+char* string_concat(char* dest, const char* src) {
+    char* original_dest = dest;
+    
+    /* Find the end of dest */
+    while (*dest != '\0') {
+        dest++;
+    }
+    
+    /* Copy src to the end of dest */
+    while (*src != '\0') {
+        *dest = *src;
+        dest++;
+        src++;
+    }
+    *dest = '\0';
+    
+    return original_dest;
+}
+
+/*
  * Check if a character is a whitespace character
  */
 int is_whitespace(char c) {

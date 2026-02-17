@@ -25,6 +25,7 @@ CFLAGS += -I./arch/x86       # Include x86 architecture headers
 CFLAGS += -I./kernel         # Include kernel headers
 CFLAGS += -I./memory         # Include memory headers
 CFLAGS += -I./drivers        # Include driver headers
+CFLAGS += -I./fs             # Include filesystem headers
 
 # Assembly flags (same as C flags for consistency)
 ASFLAGS = $(CFLAGS)
@@ -41,6 +42,7 @@ ARCH_DIR = arch/x86
 KERNEL_DIR = kernel
 MEMORY_DIR = memory
 DRIVERS_DIR = drivers
+FS_DIR = fs
 
 # Architecture-specific object files
 ARCH_OBJS = $(ARCH_DIR)/boot.o \
@@ -74,8 +76,11 @@ DRIVERS_OBJS = $(DRIVERS_DIR)/console.o \
                $(DRIVERS_DIR)/keyboard.o \
                $(DRIVERS_DIR)/timer.o
 
+# Filesystem object files
+FS_OBJS = $(FS_DIR)/vfs.o
+
 # All object files
-OBJS = $(ARCH_OBJS) $(KERNEL_OBJS) $(CPU_OBJS) $(MEMORY_OBJS) $(DRIVERS_OBJS)
+OBJS = $(ARCH_OBJS) $(KERNEL_OBJS) $(CPU_OBJS) $(MEMORY_OBJS) $(DRIVERS_OBJS) $(FS_OBJS)
 
 # Default target: build the kernel
 all: $(OUTPUT_BIN)
@@ -150,6 +155,10 @@ $(DRIVERS_DIR)/keyboard.o: $(DRIVERS_DIR)/keyboard.c $(DRIVERS_DIR)/keyboard.h $
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(DRIVERS_DIR)/timer.o: $(DRIVERS_DIR)/timer.c $(DRIVERS_DIR)/timer.h $(ARCH_DIR)/pic.h $(ARCH_DIR)/ports.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Filesystem files
+$(FS_DIR)/vfs.o: $(FS_DIR)/vfs.c $(FS_DIR)/vfs.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Link all objects into final kernel binary
