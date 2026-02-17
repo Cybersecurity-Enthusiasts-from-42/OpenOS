@@ -20,6 +20,7 @@ typedef int32_t ssize_t;
 #define VFS_MAX_CHILDREN    32
 #define VFS_MAX_FILE_SIZE   4096
 #define VFS_NAME_LENGTH     128
+#define VFS_MAX_PATH_LENGTH 256
 
 /* Node types */
 typedef enum {

@@ -15,6 +15,43 @@
 const shell_command_t* shell_get_commands(int* count);
 
 /*
+ * Helper function to build absolute path from relative path
+ * Returns 0 on success, -1 on error
+ */
+static int build_absolute_path(const char* relative_path, char* abs_path, size_t abs_path_size) {
+    (void)abs_path_size;  /* Unused - reserved for future bounds checking */
+    
+    vfs_node_t* current = kernel_get_current_directory();
+    
+    /* Build current path first */
+    char current_path[VFS_MAX_PATH_LENGTH];
+    current_path[0] = '\0';
+    
+    if (current && current->parent != current) {
+        vfs_node_t* node = current;
+        char temp[VFS_MAX_PATH_LENGTH];
+        while (node && node->parent != node) {
+            string_copy(temp, "/");
+            string_concat(temp, node->name);
+            string_concat(temp, current_path);
+            string_copy(current_path, temp);
+            node = node->parent;
+        }
+    }
+    
+    if (current_path[0] == '\0') {
+        string_copy(abs_path, "/");
+    } else {
+        string_copy(abs_path, current_path);
+    }
+    
+    string_concat(abs_path, "/");
+    string_concat(abs_path, relative_path);
+    
+    return 0;
+}
+
+/*
  * Register all built-in commands
  */
 void commands_register_all(void) {
@@ -191,8 +228,8 @@ void cmd_pwd(int argc, char** argv) {
     }
     
     /* Build path by walking up to root */
-    char path[256];
-    char temp[256];
+    char path[VFS_MAX_PATH_LENGTH];
+    char temp[VFS_MAX_PATH_LENGTH];
     path[0] = '\0';
     
     vfs_node_t* node = current;
@@ -231,34 +268,8 @@ void cmd_ls(int argc, char** argv) {
             dir = vfs_resolve_path(argv[1]);
         } else {
             /* Relative path - build absolute path */
-            char abs_path[256];
-            vfs_node_t* current = kernel_get_current_directory();
-            
-            /* Build current path first */
-            char current_path[256];
-            current_path[0] = '\0';
-            
-            if (current && current->parent != current) {
-                vfs_node_t* node = current;
-                char temp[256];
-                while (node && node->parent != node) {
-                    string_copy(temp, "/");
-                    string_concat(temp, node->name);
-                    string_concat(temp, current_path);
-                    string_copy(current_path, temp);
-                    node = node->parent;
-                }
-            }
-            
-            if (current_path[0] == '\0') {
-                string_copy(abs_path, "/");
-            } else {
-                string_copy(abs_path, current_path);
-            }
-            
-            string_concat(abs_path, "/");
-            string_concat(abs_path, argv[1]);
-            
+            char abs_path[VFS_MAX_PATH_LENGTH];
+            build_absolute_path(argv[1], abs_path, VFS_MAX_PATH_LENGTH);
             dir = vfs_resolve_path(abs_path);
         }
         
@@ -327,34 +338,8 @@ void cmd_cd(int argc, char** argv) {
         target = vfs_resolve_path(argv[1]);
     } else {
         /* Relative path - build absolute path */
-        char abs_path[256];
-        vfs_node_t* current = kernel_get_current_directory();
-        
-        /* Build current path first */
-        char current_path[256];
-        current_path[0] = '\0';
-        
-        if (current && current->parent != current) {
-            vfs_node_t* node = current;
-            char temp[256];
-            while (node && node->parent != node) {
-                string_copy(temp, "/");
-                string_concat(temp, node->name);
-                string_concat(temp, current_path);
-                string_copy(current_path, temp);
-                node = node->parent;
-            }
-        }
-        
-        if (current_path[0] == '\0') {
-            string_copy(abs_path, "/");
-        } else {
-            string_copy(abs_path, current_path);
-        }
-        
-        string_concat(abs_path, "/");
-        string_concat(abs_path, argv[1]);
-        
+        char abs_path[VFS_MAX_PATH_LENGTH];
+        build_absolute_path(argv[1], abs_path, VFS_MAX_PATH_LENGTH);
         target = vfs_resolve_path(abs_path);
     }
     
@@ -379,6 +364,9 @@ void cmd_cd(int argc, char** argv) {
  * CAT command - Display file contents
  */
 void cmd_cat(int argc, char** argv) {
+    /* Static buffer to avoid large stack allocation */
+    static uint8_t buffer[VFS_MAX_FILE_SIZE];
+    
     if (argc < 2) {
         console_write("Usage: cat <filename>\n");
         return;
@@ -391,34 +379,8 @@ void cmd_cat(int argc, char** argv) {
         file = vfs_resolve_path(argv[1]);
     } else {
         /* Relative path - build absolute path */
-        char abs_path[256];
-        vfs_node_t* current = kernel_get_current_directory();
-        
-        /* Build current path first */
-        char current_path[256];
-        current_path[0] = '\0';
-        
-        if (current && current->parent != current) {
-            vfs_node_t* node = current;
-            char temp[256];
-            while (node && node->parent != node) {
-                string_copy(temp, "/");
-                string_concat(temp, node->name);
-                string_concat(temp, current_path);
-                string_copy(current_path, temp);
-                node = node->parent;
-            }
-        }
-        
-        if (current_path[0] == '\0') {
-            string_copy(abs_path, "/");
-        } else {
-            string_copy(abs_path, current_path);
-        }
-        
-        string_concat(abs_path, "/");
-        string_concat(abs_path, argv[1]);
-        
+        char abs_path[VFS_MAX_PATH_LENGTH];
+        build_absolute_path(argv[1], abs_path, VFS_MAX_PATH_LENGTH);
         file = vfs_resolve_path(abs_path);
     }
     
@@ -437,7 +399,6 @@ void cmd_cat(int argc, char** argv) {
     }
     
     /* Read and display file contents */
-    uint8_t buffer[VFS_MAX_FILE_SIZE];
     ssize_t bytes_read = vfs_read(file, 0, file->length, buffer);
     
     if (bytes_read < 0) {

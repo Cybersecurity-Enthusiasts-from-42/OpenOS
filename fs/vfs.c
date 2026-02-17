@@ -311,7 +311,7 @@ vfs_node_t* vfs_resolve_path(const char* path) {
     }
     
     /* Parse path components */
-    char path_copy[256];
+    char path_copy[VFS_MAX_PATH_LENGTH];
     string_copy(path_copy, path + 1);  /* Skip leading slash */
     
     char* token = string_tokenize(path_copy, "/");
