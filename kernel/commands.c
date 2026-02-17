@@ -287,9 +287,13 @@ void cmd_ls(int argc, char** argv) {
     }
     
     if (dir->type != NODE_DIRECTORY) {
-        console_write("ls: '");
-        console_write(argv[1]);
-        console_write("': Not a directory\n");
+        if (argc >= 2 && argv[1]) {
+            console_write("ls: '");
+            console_write(argv[1]);
+            console_write("': Not a directory\n");
+        } else {
+            console_write("ls: Not a directory\n");
+        }
         return;
     }
     

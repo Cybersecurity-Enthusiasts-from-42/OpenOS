@@ -266,6 +266,10 @@ int vfs_add_child(vfs_node_t* parent, vfs_node_t* child) {
 
 /*
  * Remove a child node from a directory
+ * NOTE: This function does not recursively free children of removed directories.
+ * In this simple implementation, removing a directory with children will leak
+ * nodes from the static pool. This is acceptable for an educational OS but
+ * should be improved for production use.
  */
 int vfs_remove_child(vfs_node_t* parent, const char* name) {
     if (!parent || parent->type != NODE_DIRECTORY) {
