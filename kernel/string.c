@@ -142,3 +142,114 @@ char* string_tokenize(char* str, const char* delim) {
     tokenize_last = 0;
     return token_start;
 }
+
+/* Standard string functions */
+size_t strlen(const char* str) {
+    return string_length(str);
+}
+
+int strcmp(const char* str1, const char* str2) {
+    return string_compare(str1, str2);
+}
+
+char* strcpy(char* dest, const char* src) {
+    return string_copy(dest, src);
+}
+
+char* strncpy(char* dest, const char* src, size_t n) {
+    size_t i;
+    for (i = 0; i < n && src[i] != '\0'; i++) {
+        dest[i] = src[i];
+    }
+    for (; i < n; i++) {
+        dest[i] = '\0';
+    }
+    return dest;
+}
+
+void* memcpy(void* dest, const void* src, size_t n) {
+    unsigned char* d = (unsigned char*)dest;
+    const unsigned char* s = (const unsigned char*)src;
+    for (size_t i = 0; i < n; i++) {
+        d[i] = s[i];
+    }
+    return dest;
+}
+
+void* memset(void* ptr, int value, size_t num) {
+    unsigned char* p = (unsigned char*)ptr;
+    for (size_t i = 0; i < num; i++) {
+        p[i] = (unsigned char)value;
+    }
+    return ptr;
+}
+
+char* strchr(const char* str, int ch) {
+    while (*str) {
+        if (*str == (char)ch) {
+            return (char*)str;
+        }
+        str++;
+    }
+    return NULL;
+}
+
+int strncmp(const char* str1, const char* str2, size_t n) {
+    for (size_t i = 0; i < n; i++) {
+        if (str1[i] != str2[i]) {
+            return (unsigned char)str1[i] - (unsigned char)str2[i];
+        }
+        if (str1[i] == '\0') {
+            return 0;
+        }
+    }
+    return 0;
+}
+
+/**
+ * Integer to ASCII conversion
+ * 
+ * Converts an integer value to a string representation in the specified base.
+ * 
+ * @param value The integer value to convert (can be negative for base 10)
+ * @param str Buffer to store the resulting string (must be large enough)
+ * @param base Numeric base for conversion (2-36, typically 10 or 16)
+ * @return Pointer to the result string (same as str parameter)
+ * 
+ * Notes:
+ * - For base 10, negative numbers are prefixed with '-'
+ * - For other bases, the absolute value is used
+ * - Base must be between 2 and 36 (returns empty string for invalid base)
+ * - Caller must ensure buffer is large enough (typically 33 bytes for safety)
+ */
+char* itoa(int value, char* str, int base) {
+    char* ptr = str;
+    char* ptr1 = str;
+    char tmp_char;
+    int tmp_value;
+
+    if (base < 2 || base > 36) {
+        *str = '\0';
+        return str;
+    }
+
+    do {
+        tmp_value = value;
+        value /= base;
+        int digit_value = tmp_value - value * base;
+        if (digit_value < 0) digit_value = -digit_value;  /* Use absolute value for digit */
+        *ptr++ = "0123456789abcdefghijklmnopqrstuvwxyz"[digit_value];
+    } while (value);
+
+    if (tmp_value < 0 && base == 10) {
+        *ptr++ = '-';
+    }
+    *ptr-- = '\0';
+
+    while (ptr1 < ptr) {
+        tmp_char = *ptr;
+        *ptr-- = *ptr1;
+        *ptr1++ = tmp_char;
+    }
+    return str;
+}
