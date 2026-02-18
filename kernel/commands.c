@@ -10,6 +10,11 @@
 #include "../drivers/timer.h"
 #include "../arch/x86/ports.h"
 #include "../fs/vfs.h"
+#include "../include/ipc.h"
+#include "../include/smp.h"
+#include "../include/gui.h"
+#include "../include/network.h"
+#include "../include/script.h"
 
 /* Forward declaration for accessing command table */
 const shell_command_t* shell_get_commands(int* count);
@@ -65,6 +70,13 @@ void commands_register_all(void) {
     shell_register_command("cd", "Change directory", cmd_cd);
     shell_register_command("cat", "Display file contents", cmd_cat);
     shell_register_command("reboot", "Reboot the system", cmd_reboot);
+    
+    /* New feature test commands */
+    shell_register_command("test_ipc", "Test IPC mechanisms (pipes, message queues)", cmd_test_ipc);
+    shell_register_command("test_smp", "Test multi-core SMP support", cmd_test_smp);
+    shell_register_command("test_gui", "Test GUI/windowing system", cmd_test_gui);
+    shell_register_command("test_net", "Test networking stack", cmd_test_net);
+    shell_register_command("test_script", "Test shell scripting", cmd_test_script);
 }
 
 /*
@@ -454,4 +466,252 @@ void cmd_reboot(int argc, char** argv) {
     
     /* If we get here, the reboot failed */
     console_write("Reboot failed!\n");
+}
+
+/*
+ * Test IPC command - Test pipes and message queues
+ */
+void cmd_test_ipc(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
+    
+    console_write("\n=== Testing IPC Mechanisms ===\n");
+    
+    /* Test pipe */
+    console_write("\n1. Testing Pipe:\n");
+    pipe_t* pipe = pipe_create(1, 2);
+    if (pipe) {
+        console_write("   - Pipe created successfully\n");
+        
+        const char* test_data = "Hello from pipe!";
+        int written = pipe_write(pipe, test_data, strlen(test_data) + 1);
+        console_write("   - Wrote ");
+        char buf[16];
+        itoa(written, buf, 10);
+        console_write(buf);
+        console_write(" bytes to pipe\n");
+        
+        char read_buf[64];
+        int read = pipe_read(pipe, read_buf, sizeof(read_buf));
+        console_write("   - Read ");
+        itoa(read, buf, 10);
+        console_write(buf);
+        console_write(" bytes from pipe: ");
+        console_write(read_buf);
+        console_write("\n");
+        
+        pipe_close(pipe);
+        console_write("   - Pipe closed\n");
+    } else {
+        console_write("   - Failed to create pipe\n");
+    }
+    
+    /* Test message queue */
+    console_write("\n2. Testing Message Queue:\n");
+    msg_queue_t* queue = msgqueue_create(1);
+    if (queue) {
+        console_write("   - Message queue created successfully\n");
+        
+        const char* msg_data = "Test message";
+        if (msgqueue_send(queue, 1, 100, msg_data, strlen(msg_data) + 1) == 0) {
+            console_write("   - Sent message to queue\n");
+            
+            message_t msg;
+            if (msgqueue_receive(queue, &msg) == 0) {
+                console_write("   - Received message: ");
+                console_write((const char*)msg.data);
+                console_write("\n");
+            }
+        }
+        
+        msgqueue_close(queue);
+        console_write("   - Message queue closed\n");
+    } else {
+        console_write("   - Failed to create message queue\n");
+    }
+    
+    console_write("\nIPC test complete!\n\n");
+}
+
+/*
+ * Test SMP command - Test multi-core support
+ */
+void cmd_test_smp(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
+    
+    console_write("\n=== Testing Multi-core SMP Support ===\n\n");
+    
+    uint32_t cpu_count = smp_get_cpu_count();
+    console_write("Detected CPU cores: ");
+    char buf[16];
+    itoa(cpu_count, buf, 10);
+    console_write(buf);
+    console_write("\n");
+    
+    uint32_t current_cpu = smp_get_current_cpu();
+    console_write("Current CPU ID: ");
+    itoa(current_cpu, buf, 10);
+    console_write(buf);
+    console_write("\n");
+    
+    console_write("\nCPU Information:\n");
+    for (uint32_t i = 0; i < cpu_count; i++) {
+        cpu_info_t* info = smp_get_cpu_info(i);
+        if (info) {
+            console_write("  CPU ");
+            itoa(i, buf, 10);
+            console_write(buf);
+            console_write(": ");
+            
+            switch (info->state) {
+                case CPU_STATE_ONLINE:
+                    console_write("ONLINE");
+                    break;
+                case CPU_STATE_OFFLINE:
+                    console_write("OFFLINE");
+                    break;
+                case CPU_STATE_HALTED:
+                    console_write("HALTED");
+                    break;
+            }
+            console_write("\n");
+        }
+    }
+    
+    console_write("\nSMP test complete!\n\n");
+}
+
+/*
+ * Test GUI command - Test windowing system
+ */
+void cmd_test_gui(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
+    
+    console_write("\n=== Testing GUI/Windowing System ===\n\n");
+    
+    console_write("Creating test window...\n");
+    window_t* window = gui_create_window(100, 100, 400, 300, "Test Window");
+    if (window) {
+        console_write("Window created with ID: ");
+        char buf[16];
+        itoa(window->id, buf, 10);
+        console_write(buf);
+        console_write("\n");
+        
+        console_write("Showing window...\n");
+        gui_show_window(window);
+        
+        console_write("Rendering window...\n");
+        gui_render_window(window);
+        
+        console_write("Hiding window...\n");
+        gui_hide_window(window);
+        
+        console_write("Destroying window...\n");
+        gui_destroy_window(window);
+        
+        console_write("Window operations complete!\n");
+    } else {
+        console_write("Failed to create window\n");
+    }
+    
+    console_write("\nGUI test complete!\n\n");
+}
+
+/*
+ * Test networking command - Test TCP/IP stack
+ */
+void cmd_test_net(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
+    
+    console_write("\n=== Testing Networking Stack ===\n\n");
+    
+    net_device_t* dev = net_get_device();
+    if (dev) {
+        console_write("Network device: ");
+        console_write(dev->name);
+        console_write("\n");
+        
+        console_write("IP address: ");
+        char buf[16];
+        for (int i = 0; i < 4; i++) {
+            itoa(dev->ip.addr[i], buf, 10);
+            console_write(buf);
+            if (i < 3) console_write(".");
+        }
+        console_write("\n");
+        
+        console_write("MAC address: ");
+        for (int i = 0; i < 6; i++) {
+            itoa(dev->mac.addr[i], buf, 16);
+            console_write(buf);
+            if (i < 5) console_write(":");
+        }
+        console_write("\n");
+        
+        console_write("Status: ");
+        console_write(dev->is_up ? "UP" : "DOWN");
+        console_write("\n");
+    }
+    
+    console_write("\nCreating test socket...\n");
+    socket_t* sock = net_socket_create(PROTO_TCP);
+    if (sock) {
+        console_write("Socket created successfully\n");
+        
+        console_write("Binding to port 8080...\n");
+        if (net_socket_bind(sock, 8080) == 0) {
+            console_write("Socket bound successfully\n");
+        }
+        
+        console_write("Closing socket...\n");
+        net_socket_close(sock);
+    } else {
+        console_write("Failed to create socket\n");
+    }
+    
+    console_write("\nNetworking test complete!\n\n");
+}
+
+/*
+ * Test scripting command - Test shell scripting
+ */
+void cmd_test_script(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
+    
+    console_write("\n=== Testing Shell Scripting ===\n\n");
+    
+    console_write("Setting test variables...\n");
+    script_set_var("TEST_VAR", "Hello World");
+    script_set_var("VERSION", "1.0");
+    
+    console_write("Reading variables:\n");
+    const char* val = script_get_var("TEST_VAR");
+    if (val) {
+        console_write("  TEST_VAR = ");
+        console_write(val);
+        console_write("\n");
+    }
+    
+    val = script_get_var("VERSION");
+    if (val) {
+        console_write("  VERSION = ");
+        console_write(val);
+        console_write("\n");
+    }
+    
+    console_write("\nExecuting test script:\n");
+    const char* test_script = 
+        "NAME=OpenOS\n"
+        "echo Starting script\n"
+        "if true\n"
+        "echo Condition is true\n";
+    
+    script_execute(test_script);
+    
+    console_write("\nScripting test complete!\n\n");
 }
