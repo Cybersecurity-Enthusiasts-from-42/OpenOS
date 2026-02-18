@@ -57,7 +57,12 @@ KERNEL_OBJS = $(KERNEL_DIR)/kernel.o \
               $(KERNEL_DIR)/panic.o \
               $(KERNEL_DIR)/string.o \
               $(KERNEL_DIR)/shell.o \
-              $(KERNEL_DIR)/commands.o
+              $(KERNEL_DIR)/commands.o \
+              $(KERNEL_DIR)/ipc.o \
+              $(KERNEL_DIR)/smp.o \
+              $(KERNEL_DIR)/gui.o \
+              $(KERNEL_DIR)/network.o \
+              $(KERNEL_DIR)/script.o
 
 # CPU simulation object files
 CPU_DIR = $(KERNEL_DIR)/cpu
@@ -122,6 +127,21 @@ $(KERNEL_DIR)/shell.o: $(KERNEL_DIR)/shell.c $(KERNEL_DIR)/shell.h $(KERNEL_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(KERNEL_DIR)/commands.o: $(KERNEL_DIR)/commands.c $(KERNEL_DIR)/commands.h $(KERNEL_DIR)/shell.h $(KERNEL_DIR)/string.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(KERNEL_DIR)/ipc.o: $(KERNEL_DIR)/ipc.c include/ipc.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(KERNEL_DIR)/smp.o: $(KERNEL_DIR)/smp.c include/smp.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(KERNEL_DIR)/gui.o: $(KERNEL_DIR)/gui.c include/gui.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(KERNEL_DIR)/network.o: $(KERNEL_DIR)/network.c include/network.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(KERNEL_DIR)/script.o: $(KERNEL_DIR)/script.c include/script.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # CPU simulation files

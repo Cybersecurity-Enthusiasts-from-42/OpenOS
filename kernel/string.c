@@ -142,3 +142,97 @@ char* string_tokenize(char* str, const char* delim) {
     tokenize_last = 0;
     return token_start;
 }
+
+/* Standard string functions */
+size_t strlen(const char* str) {
+    return string_length(str);
+}
+
+int strcmp(const char* str1, const char* str2) {
+    return string_compare(str1, str2);
+}
+
+char* strcpy(char* dest, const char* src) {
+    return string_copy(dest, src);
+}
+
+char* strncpy(char* dest, const char* src, size_t n) {
+    size_t i;
+    for (i = 0; i < n && src[i] != '\0'; i++) {
+        dest[i] = src[i];
+    }
+    for (; i < n; i++) {
+        dest[i] = '\0';
+    }
+    return dest;
+}
+
+void* memcpy(void* dest, const void* src, size_t n) {
+    unsigned char* d = (unsigned char*)dest;
+    const unsigned char* s = (const unsigned char*)src;
+    for (size_t i = 0; i < n; i++) {
+        d[i] = s[i];
+    }
+    return dest;
+}
+
+void* memset(void* ptr, int value, size_t num) {
+    unsigned char* p = (unsigned char*)ptr;
+    for (size_t i = 0; i < num; i++) {
+        p[i] = (unsigned char)value;
+    }
+    return ptr;
+}
+
+char* strchr(const char* str, int ch) {
+    while (*str) {
+        if (*str == (char)ch) {
+            return (char*)str;
+        }
+        str++;
+    }
+    return NULL;
+}
+
+int strncmp(const char* str1, const char* str2, size_t n) {
+    for (size_t i = 0; i < n; i++) {
+        if (str1[i] != str2[i]) {
+            return (unsigned char)str1[i] - (unsigned char)str2[i];
+        }
+        if (str1[i] == '\0') {
+            return 0;
+        }
+    }
+    return 0;
+}
+
+/* Integer to ASCII conversion */
+char* itoa(int value, char* str, int base) {
+    char* ptr = str;
+    char* ptr1 = str;
+    char tmp_char;
+    int tmp_value;
+
+    if (base < 2 || base > 36) {
+        *str = '\0';
+        return str;
+    }
+
+    do {
+        tmp_value = value;
+        value /= base;
+        *ptr++ = "0123456789abcdefghijklmnopqrstuvwxyz"[tmp_value - value * base];
+    } while (value);
+
+    if (tmp_value < 0 && base == 10) {
+        *ptr++ = '-';
+    }
+    *ptr-- = '\0';
+
+    while (ptr1 < ptr) {
+        tmp_char = *ptr;
+        *ptr-- = *ptr1;
+        *ptr1++ = tmp_char;
+    }
+    return str;
+}
