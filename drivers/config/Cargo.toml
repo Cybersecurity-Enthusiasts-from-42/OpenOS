@@ -1,0 +1,19 @@
+[package]
+name = "driver_config"
+version = "0.1.0"
+edition = "2021"
+description = "OpenOS driver configuration library (no_std, bare-metal)"
+license = "MIT"
+
+[lib]
+name = "driver_config"
+crate-type = ["staticlib"]
+
+[profile.release]
+panic = "abort"
+opt-level = 2
+lto = true
+codegen-units = 1
+
+[profile.dev]
+panic = "abort"

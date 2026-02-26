@@ -8,6 +8,9 @@ iso/
 *.img
 benchmarks/pipeline_vs_single
 
+# Rust build artifacts
+drivers/config/target/
+
 # Temporary files
 *~
 *.swp

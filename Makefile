@@ -44,6 +44,11 @@ MEMORY_DIR = memory
 DRIVERS_DIR = drivers
 FS_DIR = fs
 
+# Rust driver configuration library
+RUST_CONFIG_DIR = drivers/config
+RUST_CONFIG_TARGET = i686-unknown-linux-musl
+RUST_CONFIG_LIB = $(RUST_CONFIG_DIR)/target/$(RUST_CONFIG_TARGET)/release/libdriver_config.a
+
 # Architecture-specific object files
 ARCH_OBJS = $(ARCH_DIR)/boot.o \
             $(ARCH_DIR)/idt.o \
@@ -181,9 +186,16 @@ $(DRIVERS_DIR)/timer.o: $(DRIVERS_DIR)/timer.c $(DRIVERS_DIR)/timer.h $(ARCH_DIR
 $(FS_DIR)/vfs.o: $(FS_DIR)/vfs.c $(FS_DIR)/vfs.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Rust driver configuration library (always call cargo; it handles incremental builds)
+.PHONY: rust-config
+rust-config:
+	cd $(RUST_CONFIG_DIR) && cargo build --release --target $(RUST_CONFIG_TARGET)
+
+$(RUST_CONFIG_LIB): rust-config
+
 # Link all objects into final kernel binary
-$(OUTPUT_BIN): $(OUTPUT_DIR) $(OBJS) linker.ld
-	$(CC) -T linker.ld -o $@ -m32 $(LDFLAGS) $(OBJS)
+$(OUTPUT_BIN): $(OUTPUT_DIR) $(OBJS) $(RUST_CONFIG_LIB) linker.ld
+	$(CC) -T linker.ld -o $@ -m32 $(LDFLAGS) $(OBJS) $(RUST_CONFIG_LIB)
 
 # Benchmark executable (hosted application with standard library)
 BENCHMARK_DIR = benchmarks
@@ -239,32 +251,36 @@ clean:
 	rm -f $(BENCHMARK_BIN)
 	rm -f openos.iso
 	rm -rf iso
+	cd $(RUST_CONFIG_DIR) && cargo clean
 
 # Show help
 help:
 	@echo "OpenOS Kernel Build System (Modular Architecture)"
 	@echo "=================================================="
 	@echo "Targets:"
-	@echo "  all      - Build the kernel (default)"
-	@echo "  benchmark - Build and run CPU architecture benchmark"
-	@echo "  clean    - Remove build artifacts"
-	@echo "  run      - Build and run in QEMU (via bootable ISO)"
-	@echo "  iso      - Create bootable ISO image with GRUB"
-	@echo "  run-iso  - Build ISO and run in QEMU"
-	@echo "  run-vbox - Build ISO and run in VirtualBox"
-	@echo "  help     - Show this help message"
+	@echo "  all        - Build the kernel (default)"
+	@echo "  rust-config - Build only the Rust driver configuration library"
+	@echo "  benchmark  - Build and run CPU architecture benchmark"
+	@echo "  clean      - Remove build artifacts"
+	@echo "  run        - Build and run in QEMU (via bootable ISO)"
+	@echo "  iso        - Create bootable ISO image with GRUB"
+	@echo "  run-iso    - Build ISO and run in QEMU"
+	@echo "  run-vbox   - Build ISO and run in VirtualBox"
+	@echo "  help       - Show this help message"
 	@echo ""
 	@echo "Directory Structure:"
-	@echo "  arch/x86/   - x86 architecture-specific code"
-	@echo "  kernel/     - Core kernel code"
-	@echo "  kernel/cpu/ - CPU simulation components (pipeline, single-cycle, performance)"
-	@echo "  memory/     - Memory management (PMM, VMM, heap, cache, bus)"
-	@echo "  drivers/    - Hardware drivers (console, keyboard, timer)"
-	@echo "  fs/         - File systems (VFS, ramfs)"
-	@echo "  process/    - Process management"
-	@echo "  benchmarks/ - Benchmark programs"
-	@echo "  include/    - Common headers"
+	@echo "  arch/x86/        - x86 architecture-specific code"
+	@echo "  kernel/          - Core kernel code"
+	@echo "  kernel/cpu/      - CPU simulation components (pipeline, single-cycle, performance)"
+	@echo "  memory/          - Memory management (PMM, VMM, heap, cache, bus)"
+	@echo "  drivers/         - Hardware drivers (console, keyboard, timer)"
+	@echo "  drivers/config/  - Rust driver configuration library (no_std)"
+	@echo "  fs/              - File systems (VFS, ramfs)"
+	@echo "  process/         - Process management"
+	@echo "  benchmarks/      - Benchmark programs"
+	@echo "  include/         - Common headers"
 	@echo ""
 	@echo "Compiler: $(CC)"
+	@echo "Rust target: $(RUST_CONFIG_TARGET)"
 
-.PHONY: all clean run iso run-iso run-vbox help benchmark
+.PHONY: all clean run iso run-iso run-vbox help benchmark rust-config
