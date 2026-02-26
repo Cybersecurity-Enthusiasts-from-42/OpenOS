@@ -294,6 +294,34 @@ To test the ISO image in QEMU:
 make run-iso
 ```
 
+### Debugging with QEMU + GDB
+
+OpenOS ships with a `make debug` target that starts QEMU paused with a GDB
+server enabled so you can attach a debugger before any kernel code runs.
+
+**Terminal 1 – start QEMU in debug mode:**
+
+```bash
+make debug
+```
+
+**Terminal 2 – attach GDB:**
+
+```bash
+make gdb
+```
+
+Then in GDB:
+
+```
+(gdb) continue       # resume kernel execution
+(gdb) Ctrl+C         # interrupt to inspect state
+(gdb) info registers # view CPU registers
+```
+
+For a full reference including QEMU logging (`make qemu-log`) and useful GDB
+commands, see [docs/debugging.md](docs/debugging.md).
+
 ### Cleaning
 
 To remove build artifacts:
