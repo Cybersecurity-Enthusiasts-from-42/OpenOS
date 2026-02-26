@@ -6,6 +6,11 @@ TARGET = openos
 OUTPUT_DIR = Kernel2.0
 OUTPUT_BIN = $(OUTPUT_DIR)/$(TARGET).bin
 
+# QEMU settings
+QEMU     = qemu-system-i386
+ISO_FILE = openos.iso
+QEMU_FLAGS = -cdrom $(ISO_FILE) -boot d
+
 # Compiler selection: prefer cross-compiler, fallback to native gcc
 CC := $(shell command -v i686-elf-gcc 2> /dev/null || echo gcc)
 
@@ -231,12 +236,48 @@ iso: $(OUTPUT_BIN)
 # Run ISO in QEMU
 run-iso: iso
 	@echo "Running OpenOS ISO in QEMU..."
-	@if command -v qemu-system-i386 &> /dev/null; then \
-		qemu-system-i386 -cdrom openos.iso -boot d; \
+	@if command -v $(QEMU) &> /dev/null; then \
+		$(QEMU) $(QEMU_FLAGS); \
 	else \
-		echo "Error: qemu-system-i386 not found"; \
+		echo "Error: $(QEMU) not found"; \
 		exit 1; \
 	fi
+
+# Debug: run in QEMU with GDB stub enabled, paused, serial output to terminal
+debug: iso
+	@echo "Starting OpenOS in QEMU with GDB server enabled (paused at startup)..."
+	@echo "  GDB server listening on tcp::1234"
+	@echo "  Attach with: make gdb  (in another terminal)"
+	@echo "  Or manually: gdb -ex \"target remote :1234\""
+	@echo "  Serial output will appear below. Press Ctrl+C to quit QEMU."
+	@echo ""
+	@if command -v $(QEMU) &> /dev/null; then \
+		$(QEMU) $(QEMU_FLAGS) -s -S -serial mon:stdio; \
+	else \
+		echo "Error: $(QEMU) not found"; \
+		exit 1; \
+	fi
+
+# Launch GDB pre-configured to attach to a running QEMU GDB server (tcp::1234)
+gdb:
+	@echo "Connecting GDB to QEMU GDB server at localhost:1234..."
+	@if [ -f $(OUTPUT_BIN) ]; then \
+		gdb -ex "file $(OUTPUT_BIN)" -ex "target remote :1234"; \
+	else \
+		echo "Note: kernel binary not found; run 'make' first for symbol support."; \
+		gdb -ex "target remote :1234"; \
+	fi
+
+# Run in QEMU with logging enabled (output written to qemu.log)
+qemu-log: iso
+	@echo "Starting OpenOS in QEMU with logging to qemu.log..."
+	@if command -v $(QEMU) &> /dev/null; then \
+		$(QEMU) $(QEMU_FLAGS) -serial mon:stdio -d int,cpu_reset,guest_errors -D qemu.log; \
+	else \
+		echo "Error: $(QEMU) not found"; \
+		exit 1; \
+	fi
+	@echo "QEMU log written to qemu.log"
 
 # Run in VirtualBox
 run-vbox: iso
@@ -266,6 +307,9 @@ help:
 	@echo "  iso        - Create bootable ISO image with GRUB"
 	@echo "  run-iso    - Build ISO and run in QEMU"
 	@echo "  run-vbox   - Build ISO and run in VirtualBox"
+	@echo "  debug      - Build ISO and run in QEMU with GDB server (paused, serial to terminal)"
+	@echo "  gdb        - Launch GDB pre-configured to attach to QEMU (run 'make debug' first)"
+	@echo "  qemu-log   - Build ISO and run in QEMU with logging to qemu.log"
 	@echo "  help       - Show this help message"
 	@echo ""
 	@echo "Directory Structure:"
@@ -282,5 +326,6 @@ help:
 	@echo ""
 	@echo "Compiler: $(CC)"
 	@echo "Rust target: $(RUST_CONFIG_TARGET)"
+	@echo "QEMU binary: $(QEMU)"
 
-.PHONY: all clean run iso run-iso run-vbox help benchmark rust-config
+.PHONY: all clean run iso run-iso run-vbox debug gdb qemu-log help benchmark rust-config
